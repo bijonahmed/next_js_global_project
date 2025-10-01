@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-      output: 'export',
+      reactStrictMode: true,
+      trailingSlash: true, // Recommended for static exports with dynamic routes
+    //  output: 'export',
       images: {
             unoptimized: true,
       },

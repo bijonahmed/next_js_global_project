@@ -5,57 +5,69 @@ import { useRouter } from "next/navigation";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const router = useRouter();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [username, setUsername] = useState(null);
-    const [loading, setLoading] = useState(true); // <-- define loading
+  const router = useRouter();
 
-    // Check token from localStorage
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        const user = localStorage.getItem("username");
+  const [token, setToken] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("token") || null;
+    }
+    return null;
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState(!!token);
+  const [username, setUsername] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("username") || null;
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(true);
 
-        if (token) {
-            setIsLoggedIn(true);
-            setUsername(user);
-        } else {
-            setIsLoggedIn(false);
-            setUsername(null);
-        }
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedToken = localStorage.getItem("token");
+      const savedUser = localStorage.getItem("username");
 
-        setLoading(false); // <-- finished checking
-    }, []);
-
-    const login = (token, user) => {
-        localStorage.setItem("token", token);
-        localStorage.setItem("username", user);
+      if (savedToken) {
+        setToken(savedToken);
         setIsLoggedIn(true);
-        setUsername(user);
-    };
-
-    const logout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
+        setUsername(savedUser);
+      } else {
+        setToken(null);
         setIsLoggedIn(false);
         setUsername(null);
-        router.push("/login");
-        // redirect to login and prevent back button
-        //router.replace("/login"); // replace history
-        window.history.pushState(null, "", window.location.href);
-        window.onpopstate = () => window.history.go(1);
-    };
+      }
+    }
+    setLoading(false);
+  }, []);
 
-    const protectRoute = () => {
-        if (!isLoggedIn && !loading) {
-            router.push("/login");
-        }
-    };
+  const login = (newToken, user) => {
+    localStorage.setItem("token", newToken.trim());
+    localStorage.setItem("username", user);
+    setIsLoggedIn(true);
+    setUsername(user);
+    setToken(newToken);
+  };
 
-    return (
-        <AuthContext.Provider value={{ isLoggedIn, username, login, logout, loading, protectRoute }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    setIsLoggedIn(false);
+    setUsername(null);
+    setToken(null);
+    router.push("/login");
+  };
+
+  const protectRoute = () => {
+    if (!isLoggedIn && !loading) {
+      router.push("/login");
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, username, token, login, logout, loading, protectRoute }}>
+      {loading ? <div>Loading...</div> : children}
+    </AuthContext.Provider>
+  );
 }
 
 export const useAuth = () => useContext(AuthContext);

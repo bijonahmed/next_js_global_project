@@ -24,11 +24,13 @@
     ]
   },
   "include": [
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "app/(mydashboard)/dashboard/layout.jsx"  ],
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "app/(mydashboard)/dashboard/layout.jsx",
+    "next-env.d.ts",
+    "dist/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

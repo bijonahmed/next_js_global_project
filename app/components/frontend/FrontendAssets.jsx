@@ -12,6 +12,7 @@ export default function FrontendAssets() {
         rel="stylesheet"
         crossOrigin="anonymous"
       />
+      
      
       {/* Add your other external CSS files here */}
 

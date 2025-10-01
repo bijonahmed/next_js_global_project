@@ -7,8 +7,14 @@ export default function RootLayout({ children }) {
         <meta name="color-scheme" content="light dark" />
         <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
-
+       
         {/* CDN CSS links */}
+        <link
+        href="/src/css/admincustom.css"
+        rel="stylesheet"
+        crossOrigin="anonymous"
+      />
+      
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
