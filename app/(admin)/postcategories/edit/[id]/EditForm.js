@@ -19,11 +19,7 @@ export default function EditUserForm({ id }) {
 
     const [formData, setFormData] = useState({
         id: id || "",
-        email: user?.email || "",
         name: user?.name || "",
-        phone: user?.phone || "",
-        address: user?.address || "",
-        facebook: user?.facebook || "",
         status: user?.status || ""
     });
 
@@ -37,7 +33,7 @@ export default function EditUserForm({ id }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/updateUser`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/category/updatePostCategory`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -49,8 +45,8 @@ export default function EditUserForm({ id }) {
             const data = await res.json();
             if (res.ok) {
                 setUser(data);
-                toast.success("User updated successfully ✅"); // ✅ success toast
-                router.push("/user");
+                toast.success("Post category updated successfully ✅"); // ✅ success toast
+                router.push("/postcategories");
             } else if (data.errors) {
                 toast.error(Object.values(data.errors).flat().join(" ")); // show backend validation errors
             } else {
@@ -65,9 +61,7 @@ export default function EditUserForm({ id }) {
 
 
     useEffect(() => {
-        if (!token) return;
-
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/getUserRow/${id}`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/category/checkPostCategoryrow/${id}`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
@@ -79,20 +73,16 @@ export default function EditUserForm({ id }) {
                 setFormData({
                     id: user.id,  // ✅ now id will be included
                     name: user.name ?? "",
-                    email: user.email ?? "",              // ensure string, not undefined
-                    phone: user.phone_number ?? "",
-                    address: user.address ?? "",
-                    facebook: user.facebook ?? "",
                     status: user.status ?? "",
                 });
                 setLoading(false);
             })
             .catch(() => setLoading(false));
-    }, [id, token]);
+    }, []);
 
 
     const pathname = usePathname();
-    const title = "User Edit";
+    const title = "Post Category Edit";
     //const title = pathname ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2) : "";
     // update document title
     useEffect(() => {
@@ -152,52 +142,6 @@ export default function EditUserForm({ id }) {
                                             )}
                                         </div>
 
-                                        <div className="mb-3">
-                                            <label className="form-label">Email address</label>
-                                            <input
-                                                type="text"
-                                                name="email"
-                                                className="form-control"
-                                                value={formData.email ?? ""}   // fallback if undefined
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-
-                                        <div className="mb-3">
-                                            <label className="form-label">Phone</label>
-                                            <input
-                                                type="text"
-                                                name="phone"
-                                                className={`form-control ${errors.phone ? "is-invalid" : ""}`}
-                                                value={formData.phone ?? ""}
-                                                onChange={handleChange}
-                                            />
-                                            {errors.phone?.length > 0 && (
-                                                <div className="invalid-feedback">{errors.phone[0]}</div>
-                                            )}
-                                        </div>
-
-                                        <div className="mb-3">
-                                            <label className="form-label">Address</label>
-                                            <input
-                                                type="text"
-                                                name="address"
-                                                className="form-control"
-                                                value={formData.address}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-
-                                        <div className="mb-3">
-                                            <label className="form-label">Facebook profile link</label>
-                                            <input
-                                                type="text"
-                                                name="facebook"
-                                                className="form-control"
-                                                value={formData.facebook}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
 
                                         <div className="mb-3">
                                             <label className="form-label">Status</label>

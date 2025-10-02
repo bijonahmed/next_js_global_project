@@ -49,8 +49,8 @@ export default function AdminSidebar() {
       href: "#",
       icon: "bi-clipboard-fill",
       children: [
-        { label: "Post Category", href: "#", icon: "bi-circle" },
-        { label: "Post", href: "#", icon: "bi-circle" }
+        { label: "Post Category", href: "/postcategories", icon: "bi-circle" },
+        { label: "Post", href: "/post", icon: "bi-circle" }
       ]
     },
     {

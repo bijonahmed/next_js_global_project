@@ -11,7 +11,7 @@ export default function UserPage() {
     const router = useRouter();
     const { token } = useAuth();
     const pathname = usePathname();
-    const title = "User List";
+    const title = "Post Categories List";
     //const title = pathname ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2) : "";
     // update document title
     useEffect(() => {
@@ -36,12 +36,12 @@ export default function UserPage() {
         setLoading(true);
 
         try {
-            const url = `${process.env.NEXT_PUBLIC_API_BASE}/user/allSuperAdmin?page=${page}&pageSize=${pageSize}&searchQuery=${searchQuery}&selectedFilter=${selectedFilter}`;
+            const url = `${process.env.NEXT_PUBLIC_API_BASE}/category/postCategorysearch?page=${page}&pageSize=${pageSize}&searchQuery=${searchQuery}&selectedFilter=${selectedFilter}`;
             const res = await fetch(url, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`, 
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -50,8 +50,8 @@ export default function UserPage() {
             }
 
             const json = await res.json();
-            setData(json.data || []);
-            setTotalRows(json.total_records || 0);  
+            setData(json || []);
+            //  setTotalRows(json.total_records || 0);  
         } catch (err) {
             console.error("Fetch users failed:", err);
             alert("Failed to fetch users. Please try again.");
@@ -66,15 +66,12 @@ export default function UserPage() {
 
     const columns = [
         { name: "Name", selector: row => row.name, sortable: true },
-        { name: "Email", selector: row => row.email, sortable: true },
-        { name: "Phone", selector: row => row.phone_number, sortable: true },
-        { name: "Role", selector: row => row.rulename, sortable: true },
-        { name: "Status", selector: row => row.status, sortable: true },
+        { name: "Status", selector: row => row.status === 1 ? 'Active' : 'Inactive', sortable: true },
         {
             name: "Actions",
             cell: row => (
                 <div className="d-flex gap-2">
-                    <button className="btn btn-sm btn-primary" onClick={() => router.push(`/user/edit/${row.id}`)}>
+                    <button className="btn btn-sm btn-primary" onClick={() => router.push(`/postcategories/edit/${row.id}`)}>
                         <i className="bi bi-pencil"></i> Edit
                     </button>
                 </div>
@@ -83,15 +80,7 @@ export default function UserPage() {
         },
     ];
 
-    const conditionalRowStyles = [
-        {
-            when: row => row.id === 4, // condition
-            style: {
-                backgroundColor: '#bebebdff',
-                color: 'black', // optional, to make text visible
-            },
-        },
-    ];
+
     const handlePageChange = newPage => setPage(newPage);
     const handlePerRowsChange = newPerPage => setPerPage(newPerPage);
     return (
@@ -130,7 +119,7 @@ export default function UserPage() {
                                     <div className="col-12 col-md-6 col-lg-6">
                                         <input
                                             type="text"
-                                            placeholder="Search users..."
+                                            placeholder="Search category name..."
                                             className="form-control"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -160,7 +149,7 @@ export default function UserPage() {
 
                                     {/* Column 3: Add User button */}
                                     <div className="col-6 col-md-3 col-lg-1 ms-auto">
-                                        <button className="btn btn-primary w-100" onClick={() => router.push(`/user/add/`)}>Add New</button>
+                                        <button className="btn btn-primary w-100" onClick={() => router.push(`/postcategories/addCategories`)}>Add New</button>
                                     </div>
 
                                 </div>
@@ -179,7 +168,7 @@ export default function UserPage() {
                                 onChangePage={handlePageChange}
                                 onChangeRowsPerPage={handlePerRowsChange}
                                 customStyles={customStyles}
-                                conditionalRowStyles={conditionalRowStyles}
+
                             />
                         </div>
                     </div>
