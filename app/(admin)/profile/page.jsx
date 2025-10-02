@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext"; // adjust path
+import toast, { Toaster } from "react-hot-toast";
 
 import Link from "next/link";
 
@@ -11,9 +12,10 @@ export default function ProfilePage() {
     const { token } = useAuth();
     const [user, setUser] = useState(null);
     const pathname = usePathname();
-    const title = pathname
-        ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2)
-        : "";
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [errors, setErrors] = useState({});
+    const title = pathname ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2) : "";
     // update document title
     useEffect(() => {
         if (title) {
@@ -21,8 +23,45 @@ export default function ProfilePage() {
         }
     }, [title]);
 
-    const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const [formData, setFormData] = useState({
+        name: user?.name || "",
+        phone_number: user?.phone_number || "",
+        address: user?.address || "",
+        facebook: user?.facebook || "",
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/updateprofile`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // ✅ pass token
+                },
+                body: JSON.stringify({ ...formData, email: user?.email }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setUser(data);
+                toast.success("User updated successfully ✅"); // ✅ success toast
+            } else if (data.errors) {
+                toast.error(Object.values(data.errors).flat().join(" ")); // show backend validation errors
+            } else {
+                toast.error(data.message || "Something went wrong!");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Network or server error!");
+        }
+    };
+
+
     useEffect(() => {
         // Call auth/me API
         const fetchUser = async () => {
@@ -36,11 +75,17 @@ export default function ProfilePage() {
                         },
                     }
                 );
-
                 const data = await res.json();
-
                 if (res.ok) {
                     setUser(data);
+                    setFormData({
+                        name: data?.name || "",
+                        phone_number: data?.phone_number || "",
+                        address: data?.address || "",
+                        facebook: data?.facebook || "",
+                        email: data?.email || "",
+                    });
+
                 } else {
                     console.error("Auth error:", data.message);
                     localStorage.removeItem("token");
@@ -93,33 +138,39 @@ export default function ProfilePage() {
                         <div className="col-md-12">
                             {/*begin::Quick Example*/}
                             <div className="card card-primary card-outline mb-4">
-
                                 {/*begin::Form*/}
-                                <form>
+                                <Toaster position="top-right" />
+                                <form onSubmit={handleSubmit}>
                                     {/*begin::Body*/}
                                     <div className="card-body">
                                         <div className="mb-3">
                                             <label className="form-label">Name</label>
-                                            <input type="text" className="form-control" defaultValue={user?.name || ""} />
+                                            <input type="text" className={`form-control ${errors.name ? "is-invalid" : ""}`} name="name" value={formData.name} onChange={handleChange} />
+                                            {errors.name && errors.name.length > 0 && (
+                                                <div className="invalid-feedback">{errors.name[0]}</div>
+                                            )}
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label">Email address</label>
-                                            <input type="email" className="form-control" defaultValue={user?.email || ""} />
+                                            <input type="email" disabled className="form-control" name="email" value={formData.email} onChange={handleChange} />
                                         </div>
 
                                         <div className="mb-3">
                                             <label className="form-label">Phone</label>
-                                            <input type="text" className="form-control" defaultValue={user?.phone_number} />
+                                            <input type="text" className={`form-control ${errors.phone_number ? "is-invalid" : ""}`} name="phone_number" value={formData.phone_number} onChange={handleChange} />
+                                            {errors.phone_number && errors.phone_number.length > 0 && (
+                                                <div className="invalid-feedback">{errors.phone_number[0]}</div>
+                                            )}
                                         </div>
 
                                         <div className="mb-3">
                                             <label className="form-label">Address</label>
-                                            <input type="text" className="form-control" />
+                                            <input type="text" className="form-control" name="address" value={formData.address} onChange={handleChange} />
                                         </div>
 
                                         <div className="mb-3">
                                             <label className="form-label">Facebook profile link</label>
-                                            <input type="text" className="form-control" />
+                                            <input type="text" className="form-control" name="facebook" value={formData.facebook} onChange={handleChange} />
                                         </div>
                                     </div>
                                     {/*end::Body*/}

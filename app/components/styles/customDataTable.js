@@ -3,12 +3,12 @@
 export const customStyles = {
   headCells: {
     style: {
-      fontSize: "20px",
+      fontSize: "16px",
     },
   },
   cells: {
     style: {
-      fontSize: "20px",
+      fontSize: "16px",
     },
   },
 };

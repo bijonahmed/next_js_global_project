@@ -1,11 +1,11 @@
-// app/components/AdminNavbar.js
+// app/components/AdminSidebar.js
 "use client";
 
 import { useEffect } from "react";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../../context/AuthContext"; // adjust path
+import { useAuth } from "../../context/AuthContext";
 
 export default function AdminSidebar() {
   const { isLoggedIn, logout, username } = useAuth();
@@ -18,8 +18,8 @@ export default function AdminSidebar() {
     const handleClick = (e) => {
       const parent = e.currentTarget.parentElement;
       if (parent.querySelector(".nav-treeview")) {
-        e.preventDefault(); // prevent page reload
-        parent.classList.toggle("menu-open"); // toggle submenu
+        e.preventDefault();
+        parent.classList.toggle("menu-open");
       }
     };
 
@@ -42,22 +42,30 @@ export default function AdminSidebar() {
       icon: "bi-box-seam-fill",
       children: [
         { label: "User List", href: "/user", icon: "bi-circle" },
-        { label: "Info Box", href: "./widgets/info-box.html", icon: "bi-circle" },
-        { label: "Cards", href: "./widgets/cards.html", icon: "bi-circle" }
       ]
     },
-    {
-      label: "Layout Options",
+     {
+      label: "Post Management",
       href: "#",
       icon: "bi-clipboard-fill",
       children: [
-        { label: "Default Sidebar", href: "./layout/unfixed-sidebar.html", icon: "bi-circle" }
+        { label: "Post Category", href: "#", icon: "bi-circle" },
+        { label: "Post", href: "#", icon: "bi-circle" }
       ]
-    }
+    },
+    {
+      label: "System Management",
+      href: "#",
+      icon: "bi-clipboard-fill",
+      children: [
+        { label: "Website Setting", href: "#", icon: "bi-circle" }
+      ]
+    },
+   
   ];
 
   const handleToggle = (label) => {
-    setOpenMenu(openMenu === label ? null : label); // toggle submenu
+    setOpenMenu(openMenu === label ? null : label);
   };
   const handleLogout = () => {
     logout();
@@ -95,7 +103,7 @@ export default function AdminSidebar() {
                   key={link.label}
                   className={`nav-item ${link.children ? "has-treeview" : ""} ${openMenu === link.label ? "menu-open" : ""
                     }`}
-                  style={{ marginBottom: "2px" }} // ✅ reduce bottom spacing between items
+                  style={{ marginBottom: "2px" }}
                 >
                   {link.children ? (
                     <>
@@ -104,18 +112,20 @@ export default function AdminSidebar() {
                         type="button"
                         className="nav-link btn-toggle"
                         onClick={() => handleToggle(link.label)}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}
                       >
-                        <i className={`nav-icon bi ${link.icon}`} />
-                        <p>
-                          {link.label} <i className="nav-arrow bi bi-chevron-right" />
-                        </p>
+                        <span style={{ display: "flex", alignItems: "center" }}>
+                          <i className={`nav-icon bi ${link.icon}`} style={{ marginRight: "8px" }} />
+                          {link.label}
+                        </span>
+                        <i className="nav-arrow bi bi-chevron-right" style={{ marginLeft: "auto" }} />
                       </button>
 
                       {/* Submenu */}
                       <ul
                         className={`nav nav-treeview ${openMenu === link.label ? "show" : ""
                           }`}
-                        style={{ gap: "2px", marginLeft: "10px" }} // ✅ submenu tighter
+                        style={{ gap: "2px", marginLeft: "10px" }}
                       >
                         {link.children.map((child) => (
                           <li
@@ -144,12 +154,6 @@ export default function AdminSidebar() {
           </nav>
         </div>
       </aside>
-      {/*end::Sidebar*/}
-
-
-
     </>
-
-
   );
 }

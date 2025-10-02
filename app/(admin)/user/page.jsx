@@ -11,9 +11,8 @@ export default function UserPage() {
     const router = useRouter();
     const { token } = useAuth();
     const pathname = usePathname();
-    const title = pathname
-        ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2)
-        : "";
+    const title = "User List";
+    //const title = pathname ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2) : "";
     // update document title
     useEffect(() => {
         if (title) {
@@ -72,15 +71,13 @@ export default function UserPage() {
         { name: "Name", selector: row => row.name, sortable: true },
         { name: "Email", selector: row => row.email, sortable: true },
         { name: "Phone", selector: row => row.phone_number, sortable: true },
+        { name: "Status", selector: row => row.status, sortable: true },
         {
             name: "Actions",
             cell: row => (
                 <div className="d-flex gap-2">
-                    <button className="btn btn-sm btn-light" onClick={() => router.push(`/user/view/${row.id}`)}>
-                        View
-                    </button>
                     <button className="btn btn-sm btn-primary" onClick={() => router.push(`/user/edit/${row.id}`)}>
-                        Edit
+                        <i className="bi bi-pencil"></i> Edit
                     </button>
                 </div>
             ),
@@ -126,25 +123,44 @@ export default function UserPage() {
                 <div className="container-fluid">
                     {/*begin::Row*/}
                     <div className="card card-primary card-outline mb-4">
-                        {/*begin::Header*/}
-                        <div className="card-header"><div className="card-title">Collapse</div></div>
-                        {/*end::Header*/}
-                        {/*begin::Body*/}
-                        <div className="card-body">
-                            <div className="mb-3 d-flex justify-content-between">
-                                <input
-                                    type="text"
-                                    placeholder="Search users..."
-                                    className="form-control w-50"
-                                    value={search}
-                                    onChange={e => setSearch(e.target.value)}
-                                />
-                                <button className="btn btn-primary">Add User</button>
+                        {/* Header */}
+                        <div className="card-header">
+                            <div className="card-title w-100">
+                                <div className="row g-2 align-items-center">
+
+                                    {/* Column 1: Search input */}
+                                    <div className="col-12 col-md-6 col-lg-6">
+                                        <input
+                                            type="text"
+                                            placeholder="Search users..."
+                                            className="form-control"
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                        />
+                                    </div>
+
+                                    {/* Column 2: Fetch button */}
+                                    <div className="col-6 col-md-3 col-lg-2">
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary w-100"
+                                            onClick={() => fetchUsers()}
+                                        >
+                                            Fetch
+                                        </button>
+                                    </div>
+
+                                    {/* Column 3: Add User button */}
+                                    <div className="col-6 col-md-3 col-lg-2 ms-auto">
+                                        <button className="btn btn-primary w-100">Add User</button>
+                                    </div>
+
+                                </div>
                             </div>
+                        </div>
 
-                            <button type="button" onClick={() => fetchUsers()}>Fetech</button>
-
-
+                        {/* Body */}
+                        <div className="card-body p-0">
                             <DataTable
                                 columns={columns}
                                 data={data}
@@ -155,17 +171,17 @@ export default function UserPage() {
                                 onChangePage={handlePageChange}
                                 onChangeRowsPerPage={handlePerRowsChange}
                                 customStyles={customStyles}
-                                conditionalRowStyles={conditionalRowStyles} // <-- add this
+                                conditionalRowStyles={conditionalRowStyles}
                             />
                         </div>
                     </div>
+
                     {/*end::Body*/}
                 </div>
 
                 {/*end::Row*/}
             </div>
             {/*end::Container*/}
-
             {/*end::App Content*/}
         </main >
 
