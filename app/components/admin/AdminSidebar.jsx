@@ -58,7 +58,7 @@ export default function AdminSidebar() {
       href: "#",
       icon: "bi-clipboard-fill",
       children: [
-        { label: "Website Setting", href: "#", icon: "bi-circle" }
+        { label: "Website Setting", href: "/setting", icon: "bi-circle" }
       ]
     },
    

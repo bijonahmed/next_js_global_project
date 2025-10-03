@@ -119,7 +119,16 @@ export default function ProfilePage() {
                         <div className="col-sm-6">
                             <ol className="breadcrumb float-sm-end">
                                 <li className="breadcrumb-item"><Link href="/dashboard">Home</Link></li>
-                                <li className="breadcrumb-item active" aria-current="page">{title}</li>
+                                <li className="breadcrumb-item active" aria-current="page"><a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        router.back();
+                                    }}
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    ← Back
+                                </a></li>
                             </ol>
                         </div>
                     </div>

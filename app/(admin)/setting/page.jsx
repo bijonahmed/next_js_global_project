@@ -3,20 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { useAuth } from "../../../context/AuthContext"; // adjust path
+import { useAuth } from "../../context/AuthContext"; // adjust path
 import toast, { Toaster } from "react-hot-toast";
 
 import Link from "next/link";
 
-export default function UserAddPage() {
+export default function SettingPage() {
     const { token } = useAuth();
     const [user, setUser] = useState(null);
-    const [rules, setRole] = useState(null);
     const pathname = usePathname();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState({});
-    const title = "User Add";//pathname ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2) : "";
+    const title = pathname ? pathname.replace("/", "").charAt(0).toUpperCase() + pathname.slice(2) : "";
     // update document title
     useEffect(() => {
         if (title) {
@@ -25,15 +24,15 @@ export default function UserAddPage() {
     }, [title]);
 
     const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        role_id: "",
-        phone: "",
-        address: "",
-        facebook: "",
-        password: "",
-        password_confirmation: "",
-        status: 1
+        name: user?.user?.name || "",
+        email: user?.email || "",
+        address: user?.address || "",
+        whatsApp: user?.whatsApp || "",
+        fblink: user?.fblink || "",
+        description: user?.description || "",
+        website: user?.website || "",
+        telegram: user?.telegram || "",
+        copyright: user?.copyright || "",
     });
 
     const handleChange = (e) => {
@@ -43,25 +42,21 @@ export default function UserAddPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/saveUser`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/setting/upateSetting`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`, // ✅ pass token
                 },
-                body: JSON.stringify({ ...formData }),
+                body: JSON.stringify({ ...formData, email: user?.email }),
             });
 
             const data = await res.json();
             if (res.ok) {
                 setUser(data);
-                toast.success("User add successfully ✅");
-                router.push("/user");
+                toast.success("User updated successfully ✅"); // ✅ success toast
             } else if (data.errors) {
-                toast.error(Object.values(data.errors).flat().join("\n"), {
-                    style: { whiteSpace: "pre-line" },
-                });
-
+                toast.error(Object.values(data.errors).flat().join(" "));
                 setErrors(data.errors);
             } else {
                 toast.error(data.message || "Something went wrong!");
@@ -72,21 +67,32 @@ export default function UserAddPage() {
         }
     };
 
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/allrolelist`,
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/setting/settingrow`,
                     {
                         method: "GET",
                         headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json", Authorization: `Bearer ${token}`,
                         },
                     }
                 );
                 const data = await res.json();
                 if (res.ok) {
-                    setRole(data);
+                    setUser(data.data); // not the whole data wrapper
+                    setFormData({
+                        name: data?.data?.name || "",
+                        email: data?.data?.email || "",
+                        address: data?.data?.address || "",
+                        whatsApp: data?.data?.whatsApp || "",
+                        fblink: data?.data?.fblink || "",
+                        description: data?.data?.description || "",
+                        website: data?.data?.website || "",
+                        telegram: data?.data?.telegram || "",
+                        copyright: data?.data?.copyright || "",
+                    });
                 } else {
                     console.error("Auth error:", data.message);
                 }
@@ -96,8 +102,9 @@ export default function UserAddPage() {
                 setLoading(false);
             }
         };
+
         fetchUser();
-    }, [router]);
+    }, []);
 
     if (loading) {
         return <p className="text-center py-5"></p>;
@@ -156,85 +163,50 @@ export default function UserAddPage() {
                                                 <div className="invalid-feedback">{errors.name[0]}</div>
                                             )}
                                         </div>
+
+
                                         <div className="mb-3">
                                             <label className="form-label">Email address</label>
-                                            <input type="text" className={`form-control ${errors.email ? "is-invalid" : ""}`} name="email" value={formData.email} onChange={handleChange} />
-                                            {errors.name && errors.email.length > 0 && (
-                                                <div className="invalid-feedback">{errors.email[0]}</div>
-                                            )}
+                                            <input type="email" className="form-control" name="email" value={formData.email} onChange={handleChange} />
                                         </div>
-
-                                        <div className="mb-3">
-                                            <label className="form-label">Phone</label>
-                                            <input type="text" className={`form-control ${errors.phone ? "is-invalid" : ""}`} name="phone" value={formData.phone} onChange={handleChange} />
-                                            {errors.phone && errors.phone.length > 0 && (
-                                                <div className="invalid-feedback">{errors.phone[0]}</div>
-                                            )}
-                                        </div>
-
-                                        <div className="mb-3">
-                                            <label className="form-label">Rule</label>
-                                            <select
-                                                className={`form-control ${errors.role_id ? "is-invalid" : ""}`}
-                                                name="role_id"
-                                                value={formData.role_id}
-                                                onChange={handleChange}
-                                            >
-                                                <option value="">-- Select Rule --</option>
-                                                {rules.map((rule, index) => (
-                                                    <option key={rule.id} value={rule.id}>
-                                                        {rule.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-
-                                            {errors.role_id && errors.role_id.length > 0 && (
-                                                <div className="invalid-feedback">{errors.role_id[0]}</div>
-                                            )}
-
-                                        </div>
-
 
                                         <div className="mb-3">
                                             <label className="form-label">Address</label>
                                             <input type="text" className="form-control" name="address" value={formData.address} onChange={handleChange} />
                                         </div>
 
+
                                         <div className="mb-3">
-                                            <label className="form-label">Facebook profile link</label>
-                                            <input type="text" className="form-control" name="facebook" value={formData.facebook} onChange={handleChange} />
+                                            <label className="form-label">Business Description</label>
+                                            <textarea type="text" className="form-control" name="description" value={formData.description} onChange={handleChange} />
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <label className="form-label">WhatsApp</label>
+                                            <input type="text" className="form-control" name="whatsApp" value={formData.whatsApp} onChange={handleChange} />
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <label className="form-label">Facebook Page Link</label>
+                                            <input type="text" className="form-control" name="fblink" value={formData.fblink} onChange={handleChange} />
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <label className="form-label">Website</label>
+                                            <input type="text" className="form-control" name="website" value={formData.website} onChange={handleChange} />
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <label className="form-label">Telegram</label>
+                                            <input type="text" className="form-control" name="telegram" value={formData.telegram} onChange={handleChange} />
                                         </div>
 
 
                                         <div className="mb-3">
-                                            <label className="form-label">Password</label>
-                                            <input
-                                                type="password"
-                                                className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                                                name="password"
-                                                value={formData.password}
-                                                onChange={handleChange}
-                                            />
-                                            {errors.password && errors.password.length > 0 && (
-                                                <div className="invalid-feedback">{errors.password[0]}</div>
-                                            )}
+                                            <label className="form-label">Copyright</label>
+                                            <input type="text" className="form-control" name="copyright" value={formData.copyright} onChange={handleChange} />
                                         </div>
 
-                                        <div className="mb-3">
-                                            <label className="form-label">Confirm Password</label>
-                                            <input
-                                                type="password"
-                                                className={`form-control ${errors.password_confirmation ? "is-invalid" : ""}`}
-                                                name="password_confirmation"
-                                                value={formData.password_confirmation}
-                                                onChange={handleChange}
-                                            />
-                                            {errors.password_confirmation && errors.password_confirmation.length > 0 && (
-                                                <div className="invalid-feedback">{errors.password_confirmation[0]}</div>
-                                            )}
-                                        </div>
-
-                                      
 
 
                                     </div>

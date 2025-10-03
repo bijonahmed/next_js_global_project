@@ -19,6 +19,7 @@ export default function EditUserForm({ id }) {
         meta_keyword: "",
         categoryId: "",
         description_full: "",
+        files: null, // single image
         status: "",
     });
     const [loading, setLoading] = useState(true);
@@ -28,11 +29,60 @@ export default function EditUserForm({ id }) {
     const pathname = usePathname();
     const title = "Post Edit";
 
+
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, files } = e.target;
+        if (files) {
+            setFormData({ ...formData, [name]: files[0] }); // store single file
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const payload = new FormData();
+        payload.append("id", formData.id);
+        payload.append("name", formData.name);
+        payload.append("meta_title", formData.meta_title);
+        payload.append("meta_description", formData.meta_description);
+        payload.append("meta_keyword", formData.meta_keyword);
+        payload.append("categoryId", formData.categoryId);
+        payload.append("description_full", formData.description_full);
+        payload.append("status", formData.status);
+
+        if (formData.files instanceof File) {
+            payload.append("files", formData.files);
+        }
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/post/update`, {
+                method: "POST",
+                body: payload,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await res.json();
+            if (res.ok) {
+               // setUser(data);
+                toast.success("Post update successfully ✅");
+                router.push("/post");
+            } else if (data.errors) {
+                toast.error(Object.values(data.errors).flat().join("\n"), {
+                    style: { whiteSpace: "pre-line" },
+                });
+                setErrors(data.errors);
+            } else {
+                toast.error(data.message || "Something went wrong!");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Network or server error!");
+        }
+    };
+
+    /*
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -58,10 +108,10 @@ export default function EditUserForm({ id }) {
             toast.error("Network or server error!");
         }
     };
+    */
 
     // Fetch post data
     useEffect(() => {
-        if (!id || !token) return;
         const fetchPost = async () => {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/post/postrow/${id}`, {
@@ -69,6 +119,9 @@ export default function EditUserForm({ id }) {
                 });
                 const data = await res.json();
                 const datarow = data?.data || {};
+                const chkImg = data.images || "";
+                console.log("chkImg", chkImg);
+
                 setFormData({
                     id: datarow.id ?? "",
                     name: datarow.name ?? "",
@@ -78,6 +131,7 @@ export default function EditUserForm({ id }) {
                     categoryId: datarow.categoryId ?? "",
                     description_full: datarow.description_full ?? "",
                     status: datarow.status ?? "",
+                    files: chkImg ?? "",
                 });
             } catch (err) {
                 console.error(err);
@@ -86,7 +140,7 @@ export default function EditUserForm({ id }) {
             }
         };
         fetchPost();
-    }, [id, token]);
+    }, []);
 
     // Fetch post categories
     useEffect(() => {
@@ -120,7 +174,16 @@ export default function EditUserForm({ id }) {
                         <div className="col-sm-6">
                             <ol className="breadcrumb float-sm-end">
                                 <li className="breadcrumb-item"><Link href="/dashboard">Home</Link></li>
-                                <li className="breadcrumb-item active" aria-current="page">{title}</li>
+                                <li className="breadcrumb-item active" aria-current="page"><a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        router.back();
+                                    }}
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    ← Back
+                                </a></li>
                             </ol>
                         </div>
                     </div>
@@ -206,6 +269,34 @@ export default function EditUserForm({ id }) {
                                                 }}
                                             />
                                         </div>
+
+                                        <div className="mb-3">
+                                            <label className="form-label">Upload Image</label>
+                                            <input
+                                                type="file"
+                                                name="files"
+                                                accept="image/*"
+                                                onChange={handleChange}
+                                                className="form-control"
+                                            />
+                                        </div>
+
+                                        {/* ✅ Show Preview if Image is Selected */}
+                                        {formData.files && (
+                                            <div className="mb-3">
+                                                <img
+                                                    src={
+                                                        typeof formData.files === "string"
+                                                            ? formData.files // API URL
+                                                            : URL.createObjectURL(formData.files) // new File object
+                                                    }
+                                                    alt="Preview"
+                                                    className="img-thumbnail"
+                                                    style={{ maxHeight: "150px" }}
+                                                />
+                                            </div>
+                                        )}
+
                                     </div>
 
                                     <div className="card-footer text-end">

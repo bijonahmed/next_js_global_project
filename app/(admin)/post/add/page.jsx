@@ -35,25 +35,41 @@ export default function UserAddPage() {
         meta_keyword: "",
         categoryId: "",
         description_full: "",
+        files: null, // single image
         status: 1
     });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value, files } = e.target;
+        if (files) {
+            setFormData({ ...formData, [name]: files[0] }); // store single file
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const payload = new FormData();
+        payload.append("name", formData.name);
+        payload.append("meta_title", formData.meta_title);
+        payload.append("meta_description", formData.meta_description);
+        payload.append("meta_keyword", formData.meta_keyword);
+        payload.append("categoryId", formData.categoryId);
+        payload.append("description_full", formData.description_full);
+        payload.append("status", formData.status);
+
+        if (formData.files instanceof File) {
+            payload.append("files", formData.files);
+        }
+
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/post/save`, {
                 method: "POST",
+                body: payload,
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ ...formData }),
             });
-
             const data = await res.json();
             if (res.ok) {
                 setUser(data);
@@ -63,7 +79,6 @@ export default function UserAddPage() {
                 toast.error(Object.values(data.errors).flat().join("\n"), {
                     style: { whiteSpace: "pre-line" },
                 });
-
                 setErrors(data.errors);
             } else {
                 toast.error(data.message || "Something went wrong!");
@@ -118,7 +133,16 @@ export default function UserAddPage() {
                         <div className="col-sm-6">
                             <ol className="breadcrumb float-sm-end">
                                 <li className="breadcrumb-item"><Link href="/dashboard">Home</Link></li>
-                                <li className="breadcrumb-item active" aria-current="page">{title}</li>
+                                <li className="breadcrumb-item active" aria-current="page"><a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        router.back();
+                                    }}
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    ← Back
+                                </a></li>
                             </ol>
                         </div>
                     </div>
@@ -196,10 +220,9 @@ export default function UserAddPage() {
 
                                         <div className="mb-3">
                                             <label className="form-label">Full Description</label>
-                                            {/* <textarea className="form-control" name="address" value={formData.description_full} onChange={handleChange} /> */}
                                             <CKEditor
                                                 editor={ClassicEditor}
-                                               
+
                                                 data={formData.description_full}
                                                 onChange={(event, editor) => {
                                                     const data = editor.getData();
@@ -207,6 +230,29 @@ export default function UserAddPage() {
                                                 }}
                                             />
                                         </div>
+
+                                        <div className="mb-3">
+                                            <label className="form-label">Upload Image</label>
+                                            <input
+                                                type="file"
+                                                name="files"
+                                                accept="image/*"
+                                                onChange={handleChange}
+                                                className="form-control"
+                                            />
+                                        </div>
+
+                                        {/* ✅ Show Preview if Image is Selected */}
+                                        {formData.files && (
+                                            <div className="mb-3">
+                                                <img
+                                                    src={URL.createObjectURL(formData.files)}
+                                                    alt="Preview"
+                                                    className="img-thumbnail"
+                                                    style={{ maxHeight: "150px" }}
+                                                />
+                                            </div>
+                                        )}
 
 
                                     </div>
